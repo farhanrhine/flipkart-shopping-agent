@@ -13,6 +13,10 @@ A powerful RAG-based (Retrieval-Augmented Generation) recommender system designe
 - **Package Management:** [UV](https://github.com/astral-sh/uv)
 - **Containerization:** [Docker](https://www.docker.com/) & [Kubernetes](https://kubernetes.io/)
 
+## 🏗️ Architecture
+
+![Architecture](architecture.png)
+
 ## 📂 Project Structure
 
 ```text
@@ -41,12 +45,15 @@ flipkart-shopping-agent/
 
 1. **Clone the repository**
 2. **Install dependencies:**
+
    ```bash
    uv sync
    ```
+
 3. **Set up environment variables:**
    Create a `.env` file with your credentials (AstraDB, Groq, etc.)
 4. **Run the application:**
+
    ```bash
    python app.py
    ```
