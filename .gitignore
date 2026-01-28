@@ -13,3 +13,4 @@ wheels/
 # Markdown files (keep locally, hide on GitHub)
 *.md
 !README.md
+!LOGGING_GUIDE.md 
