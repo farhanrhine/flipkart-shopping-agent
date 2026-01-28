@@ -1,6 +1,7 @@
-def main():
-    print("Hello from flipkart-shopping-agent!")
+import sys 
+from src.utils.custom_exception import CustomException
 
-
-if __name__ == "__main__":
-    main()
+try: 
+    x = 1/0
+except Exception as e:
+    raise CustomException("Division failed", sys)
