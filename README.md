@@ -46,6 +46,7 @@ flipkart-shopping-agent/
 ├── Dockerfile                       # 🐳 Docker build instructions
 ├── flask-deployment.yaml            # ☸️ Main Kubernetes App Deployment
 ├── pyproject.toml                   # 🐍 Python dependencies
+├── FULL-DOCUMENTATION.md            # 📚 Detailed Deployment Guide
 ├── README.md                        # 📖 Project Overview
 └── .gitignore                       # 🙈 Git ignore rules
 ```
@@ -169,7 +170,8 @@ If you want to understand or modify the code, here are the most important files:
 ## 📦 Deployment
 
 For full deployment instructions on **Google Cloud Platform (GCP)** using **Minikube** and **Kubernetes**, please refer to:
-For full deployment instructions on **Google Cloud Platform (GCP)** using **Minikube** and **Kubernetes**, please refer to the local documentation.
+
+👉 [**FULL-DOCUMENTATION.md**](FULL-DOCUMENTATION.md)
 
 ---
 
