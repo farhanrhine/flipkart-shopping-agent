@@ -10,6 +10,7 @@ from langchain_huggingface import HuggingFaceEndpointEmbeddings
 from src.pipeline.data_converter import DataConverter
 from src.config.settings import Config
 
+
 class DataIngestor:
     def __init__(self):
         self.embedding = HuggingFaceEndpointEmbeddings(model=Config.EMBEDDING_MODEL)
@@ -59,6 +60,26 @@ class DataIngestor:
 
         return self.vstore
 
-if __name__=="__main__":
-    ingestor = DataIngestor()
-    ingestor.ingest(load_existing=False)
+# ==============================================================================
+# DEVELOPMENT/TESTING BLOCK - NOT FOR PRODUCTION
+# ==============================================================================
+# USE THIS WHEN:
+#   - First time data ingestion: python src/pipeline/data_ingestion.py
+#   - Re-ingesting data after CSV changes
+#   - Testing database connection
+#
+# DON'T USE THIS WHEN:
+#   - Running with Flask/FastAPI (import DataIngestor class instead)
+#   - Data already ingested in AstraDB
+#   - In production deployment
+#
+# WARNING: Running with load_existing=False will add duplicate data!
+#          Delete collection in AstraDB first if re-ingesting.
+#
+# To enable: Uncomment the block below
+# To disable: Keep commented (default for production)
+# ==============================================================================
+
+# if __name__ == "__main__":
+#     ingestor = DataIngestor()
+#     ingestor.ingest(load_existing=False)
