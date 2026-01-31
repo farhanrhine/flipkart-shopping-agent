@@ -184,5 +184,5 @@ The application includes built-in monitoring:
 
 ---
 
-> [!WARNING]
-> Better structure of project documentation done by **Vibe Coding**
+> [!NOTE]
+> **Acknowledgement:** Project structure, documentation, Flask backend, frontend, and Docker/YAML configurations were refined by **Vibe Coding**.
