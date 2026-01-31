@@ -181,3 +181,7 @@ The application includes built-in monitoring:
 
 - **Prometheus**: `/metrics` endpoint
 - **Grafana**: Visual dashboards for request latency and error rates
+
+---
+
+*Better structure of project documentation done by **Vibe Coding***
