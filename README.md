@@ -1,9 +1,9 @@
 # 🛒 Flipkart Shopping Agent
 
-A powerful **Retrieval-Augmented Generation (RAG)** chatbot designed to help users find products, analyze reviews, and get recommendations based on Flipkart product data. Built with **Flask**, **LangChain**, **Groq**, and **AstraDB**.
+A powerful **Retrieval-Augmented Generation (RAG)** AI agent designed to help users find products, analyze reviews, and get recommendations based on Flipkart product data. Built with **Flask**, **LangChain**, **Groq**, and **AstraDB**.
 
 **What is this?**
-This is an AI-powered shopping assistant that helps users find products on Flipkart. It uses **RAG (Retrieval-Augmented Generation)** to look up real product reviews and specifications to give honest, data-backed recommendations.
+This is an AI-powered shopping agent that helps users find products on Flipkart. It uses **RAG (Retrieval-Augmented Generation)** to look up real product reviews and specifications to give honest, data-backed recommendations.
 
 ---
 
