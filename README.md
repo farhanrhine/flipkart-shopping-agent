@@ -24,6 +24,8 @@ flipkart-shopping-agent/
 │   └── flipkart_product_review.csv  # 💾 Raw dataset
 ├── grafana/
 │   └── grafana-deployment.yaml      # 📈 Grafana K8s deployment
+├── llmop-essential/
+│   └── FULL-DOCUMENTATION.md        # 📚 Detailed Deployment Guide
 ├── prometheus/
 │   ├── prometheus-configmap.yaml    # ⚙️ Monitoring config
 │   └── prometheus-deployment.yaml   # 🔍 Prometheus K8s deployment
@@ -46,7 +48,6 @@ flipkart-shopping-agent/
 ├── Dockerfile                       # 🐳 Docker build instructions
 ├── flask-deployment.yaml            # ☸️ Main Kubernetes App Deployment
 ├── pyproject.toml                   # 🐍 Python dependencies
-├── FULL-DOCUMENTATION.md            # 📚 Detailed Deployment Guide
 ├── README.md                        # 📖 Project Overview
 └── .gitignore                       # 🙈 Git ignore rules
 ```
@@ -65,6 +66,21 @@ flipkart-shopping-agent/
     - The retrieved product reviews are sent to **Groq** (a really fast AI model provider).
     - The AI reads the reviews and drafts a helpful response.
 6. **Response:** The answer is sent back to `app.py` and displayed on your screen.
+
+---
+
+## 🧠 AI Agent Capabilities (The Heart of the Project)
+
+The core logic resides in `src/agent/rag_agent.py`, built using the latest **LangChain** patterns:
+
+- **Architecture**: Uses the modern `create_agent` API for robust tool-calling and reasoning.
+- **Tools**: Equipped with a custom `search_products` tool that semantically searches AstraDB for relevant reviews.
+- **Memory**: Maintains context-aware conversations using `ChatMessageHistory` and `BaseChatMessageHistory`, allowing for follow-up questions.
+- **Persona**: Operates under a strict system prompt to ensure answers are:
+  - Based **only** on retrieved reviews.
+  - Honest about product pros and cons.
+  - Helpful and concise.
+- **Streaming**: Supports token-by-token streaming for a responsive UI experience.
 
 ---
 
@@ -89,7 +105,7 @@ We use **AstraDB (Cassandra)** as our vector store to enable semantic search cap
 - **LLM**: Groq (Llama3 / Mixtral)
 - **Embeddings**: HuggingFace (`BAAI/bge-base-en-v1.5`)
 - **Vector DB**: DataStax AstraDB (Cassandra)
-- **Framework**: LangChain (Agents & Tools)
+- **Framework**: LangChain (Latest `create_agent` API, Tool Calling)
 - **Backend**: Flask (Python)
 - **Frontend**: HTML5, CSS3 (Flipkart Theme)
 - **Monitoring**: Prometheus & Grafana
@@ -155,7 +171,7 @@ If you want to understand or modify the code, here are the most important files:
 ## 📦 Deployment
 
 For full deployment instructions on **Google Cloud Platform (GCP)** using **Minikube** and **Kubernetes**, please refer to:
-👉 [**FULL-DOCUMENTATION.md**](FULL-DOCUMENTATION.md)
+👉 [**FULL-DOCUMENTATION.md**](llmop-essential/FULL-DOCUMENTATION.md)
 
 ---
 
