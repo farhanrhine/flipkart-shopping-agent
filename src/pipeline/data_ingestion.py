@@ -26,14 +26,36 @@ class DataIngestor:
             namespace=Config.ASTRA_DB_KEYSPACE
         )
 
-    def ingest(self,load_existing=True):
-        if load_existing==True:
+    def ingest(self, load_existing=True):
+        """
+        Ingest documents into the vector store.
+        
+        Args:
+            load_existing: If True, just return existing vstore without adding docs.
+                          If False, add documents only if collection is empty.
+        """
+        if load_existing:
+            print("Using existing vector store connection.")
             return self.vstore
         
+        # Check if collection already has data
+        try:
+            # Try to get a sample document to check if data exists
+            results = self.vstore.similarity_search("test", k=1)
+            if results:
+                print(f"Collection already has data ({len(results)}+ documents). Skipping ingestion.")
+                print("To re-ingest, delete the collection in AstraDB first.")
+                return self.vstore
+        except Exception:
+            pass  # Collection might be empty, proceed with ingestion
+        
+        print("Ingesting documents...")
         csv_path = str(PROJECT_ROOT / "data" / "flipkart_product_review.csv")
         docs = DataConverter(csv_path).convert()
+        print(f"Found {len(docs)} documents to ingest.")
 
         self.vstore.add_documents(docs)
+        print("Ingestion complete!")
 
         return self.vstore
 
