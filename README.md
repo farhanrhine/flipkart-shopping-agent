@@ -41,10 +41,10 @@ flipkart-shopping-agent/
 │       ├── custom_exception.py      # ⚠️ Error handling
 │       └── logger.py                # 📝 System logging
 ├── static/
-│   └── style.css                    # 🎨 Frontend styling
+│   └── style.css                    # 🎨 Frontend styling (Done by Vibe Coding)
 ├── templates/
-│   └── index.html                   # 🖥️ Frontend UI
-├── app.py                           # 🏁 Flask Application Entry Point
+│   └── index.html                   # 🖥️ Frontend UI (Done by Vibe Coding)
+├── app.py                           # 🏁 Flask Application Entry Point (Done by Vibe Coding)
 ├── Dockerfile                       # 🐳 Docker build instructions
 ├── flask-deployment.yaml            # ☸️ Main Kubernetes App Deployment
 ├── pyproject.toml                   # 🐍 Python dependencies
