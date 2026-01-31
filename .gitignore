@@ -11,6 +11,6 @@ wheels/
 .env
 
 # Markdown files (keep locally, hide on GitHub)
-*.md
-!README.md
-!LOGGING_GUIDE.md 
+# *.md
+# !README.md
+# !LOGGING_GUIDE.md 
