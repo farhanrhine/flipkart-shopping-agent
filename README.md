@@ -24,8 +24,6 @@ flipkart-shopping-agent/
 │   └── flipkart_product_review.csv  # 💾 Raw dataset
 ├── grafana/
 │   └── grafana-deployment.yaml      # 📈 Grafana K8s deployment
-├── llmop-essential/
-│   └── FULL-DOCUMENTATION.md        # 📚 Detailed Deployment Guide
 ├── prometheus/
 │   ├── prometheus-configmap.yaml    # ⚙️ Monitoring config
 │   └── prometheus-deployment.yaml   # 🔍 Prometheus K8s deployment
@@ -171,7 +169,7 @@ If you want to understand or modify the code, here are the most important files:
 ## 📦 Deployment
 
 For full deployment instructions on **Google Cloud Platform (GCP)** using **Minikube** and **Kubernetes**, please refer to:
-👉 [**FULL-DOCUMENTATION.md**](llmop-essential/FULL-DOCUMENTATION.md)
+For full deployment instructions on **Google Cloud Platform (GCP)** using **Minikube** and **Kubernetes**, please refer to the local documentation.
 
 ---
 
