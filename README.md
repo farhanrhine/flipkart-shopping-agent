@@ -15,6 +15,44 @@ This project follows a modern **LLMOps** workflow, integrating data ingestion, v
 
 ---
 
+## 📂 Project Structure
+
+```bash
+flipkart-shopping-agent/
+├── .github/                   # 🤖 GitHub Actions workflows
+├── data/                      
+│   └── flipkart_product_review.csv  # 💾 Raw dataset
+├── grafana/
+│   └── grafana-deployment.yaml      # 📈 Grafana K8s deployment
+├── prometheus/
+│   ├── prometheus-configmap.yaml    # ⚙️ Monitoring config
+│   └── prometheus-deployment.yaml   # 🔍 Prometheus K8s deployment
+├── src/
+│   ├── agent/
+│   │   └── rag_agent.py             # 🧠 Main RAG Logic (LangChain)
+│   ├── config/
+│   │   └── settings.py              # ⚙️ Environment settings
+│   ├── pipeline/
+│   │   ├── data_converter.py        # 🔄 CSV to Document converter
+│   │   └── data_ingestion.py        # 💉 AstraDB Ingestion script
+│   └── utils/
+│       ├── custom_exception.py      # ⚠️ Error handling
+│       └── logger.py                # 📝 System logging
+├── static/
+│   └── style.css                    # 🎨 Frontend styling
+├── templates/
+│   └── index.html                   # 🖥️ Frontend UI
+├── app.py                           # 🏁 Flask Application Entry Point
+├── Dockerfile                       # 🐳 Docker build instructions
+├── flask-deployment.yaml            # ☸️ Main Kubernetes App Deployment
+├── pyproject.toml                   # 🐍 Python dependencies
+├── FULL-DOCUMENTATION.md            # 📚 Detailed Deployment Guide
+├── README.md                        # 📖 Project Overview
+└── .gitignore                       # 🙈 Git ignore rules
+```
+
+---
+
 ## ⚡ How It Works (The Flow)
 
 1. **User Asks a Question:** "What are the best headphones under 2000?"
@@ -127,41 +165,3 @@ The application includes built-in monitoring:
 
 - **Prometheus**: `/metrics` endpoint
 - **Grafana**: Visual dashboards for request latency and error rates
-
----
-
-## 📂 Project Structure
-
-```bash
-flipkart-shopping-agent/
-├── .github/                   # 🤖 GitHub Actions workflows
-├── data/                      
-│   └── flipkart_product_review.csv  # 💾 Raw dataset
-├── grafana/
-│   └── grafana-deployment.yaml      # 📈 Grafana K8s deployment
-├── prometheus/
-│   ├── prometheus-configmap.yaml    # ⚙️ Monitoring config
-│   └── prometheus-deployment.yaml   # 🔍 Prometheus K8s deployment
-├── src/
-│   ├── agent/
-│   │   └── rag_agent.py             # 🧠 Main RAG Logic (LangChain)
-│   ├── config/
-│   │   └── settings.py              # ⚙️ Environment settings
-│   ├── pipeline/
-│   │   ├── data_converter.py        # 🔄 CSV to Document converter
-│   │   └── data_ingestion.py        # 💉 AstraDB Ingestion script
-│   └── utils/
-│       ├── custom_exception.py      # ⚠️ Error handling
-│       └── logger.py                # 📝 System logging
-├── static/
-│   └── style.css                    # 🎨 Frontend styling
-├── templates/
-│   └── index.html                   # 🖥️ Frontend UI
-├── app.py                           # 🏁 Flask Application Entry Point
-├── Dockerfile                       # 🐳 Docker build instructions
-├── flask-deployment.yaml            # ☸️ Main Kubernetes App Deployment
-├── pyproject.toml                   # 🐍 Python dependencies
-├── FULL-DOCUMENTATION.md            # 📚 Detailed Deployment Guide
-├── README.md                        # 📖 Project Overview
-└── .gitignore                       # 🙈 Git ignore rules
-```
