@@ -1,0 +1,61 @@
+# ==============================================================================
+# PROMETHEUS CONFIGMAP - Configuration for Prometheus
+# ==============================================================================
+# This configures what Prometheus scrapes for metrics
+#
+# APPLY COMMAND:
+#   kubectl apply -f prometheus/prometheus-configmap.yaml
+#
+# SCRAPE TARGETS:
+#   - Prometheus itself (localhost:9090)
+#   - Flask app (flipkart-app-service:5000)
+# ==============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: monitoring
+data:
+  prometheus.yml: |
+    # Global configuration
+    global:
+      scrape_interval: 15s      # How often to scrape targets
+      evaluation_interval: 15s  # How often to evaluate rules
+
+    # Scrape configurations
+    scrape_configs:
+      # Prometheus scrapes itself
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+
+      # Scrape Flask app metrics
+      # NOTE: Uses Kubernetes service name for internal communication
+      - job_name: 'flask-app'
+        metrics_path: /metrics
+        static_configs:
+          # Use Kubernetes service name (matches flask-deployment.yaml)
+          - targets: ['flask-service.default.svc.cluster.local:80']
+        # Alternative: Use external IP (uncomment if needed)
+        # static_configs:
+        #   - targets: ['<your-node-ip>:80']
+
+      # Auto-discover pods with Prometheus annotations
+      # This will find any pod with prometheus.io/scrape: "true"
+      - job_name: 'kubernetes-pods'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__

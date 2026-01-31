@@ -1,0 +1,132 @@
+# ==============================================================================
+# PROMETHEUS DEPLOYMENT - For metrics collection
+# ==============================================================================
+# Deploys Prometheus server for scraping and storing metrics
+#
+# APPLY COMMANDS:
+#   kubectl create namespace monitoring
+#   kubectl apply -f prometheus/prometheus-configmap.yaml
+#   kubectl apply -f prometheus/prometheus-deployment.yaml
+#
+# ACCESS:
+#   http://<node-ip>:32001
+# ==============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: monitoring
+  labels:
+    app: prometheus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+    spec:
+      # Service account for Kubernetes service discovery
+      serviceAccountName: prometheus
+      containers:
+        - name: prometheus
+          image: prom/prometheus:latest
+          args:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+            - "--storage.tsdb.path=/prometheus"
+            - "--web.enable-lifecycle"  # Allow config reload via API
+          ports:
+            - containerPort: 9090
+          
+          # Mount the config from ConfigMap
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/prometheus
+            - name: prometheus-storage
+              mountPath: /prometheus
+          
+          # Resource limits
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      
+      volumes:
+        - name: config-volume
+          configMap:
+            name: prometheus-config
+        - name: prometheus-storage
+          emptyDir: {}  # For demo; use PersistentVolume in production
+
+---
+# ==============================================================================
+# PROMETHEUS SERVICE - Expose Prometheus UI
+# ==============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-service
+  namespace: monitoring
+spec:
+  selector:
+    app: prometheus
+  ports:
+    - protocol: TCP
+      port: 9090
+      targetPort: 9090
+      nodePort: 32001  # Access via http://<node-ip>:32001
+  type: NodePort
+
+---
+# ==============================================================================
+# PROMETHEUS SERVICE ACCOUNT & RBAC
+# ==============================================================================
+# Required for Kubernetes service discovery (to find pods)
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+  namespace: monitoring
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus
+rules:
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - nodes/proxy
+      - services
+      - endpoints
+      - pods
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources:
+      - configmaps
+    verbs: ["get"]
+  - nonResourceURLs: ["/metrics"]
+    verbs: ["get"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus
+subjects:
+  - kind: ServiceAccount
+    name: prometheus
+    namespace: monitoring

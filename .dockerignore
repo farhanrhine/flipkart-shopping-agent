@@ -1,0 +1,52 @@
+# ==============================================================================
+# DOCKER IGNORE - Files to exclude from Docker build
+# ==============================================================================
+
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv
+venv/
+ENV/
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# Environment files (secrets should be passed as env vars)
+.env
+.env.local
+.env.*.local
+
+# Testing
+.pytest_cache
+.coverage
+htmlcov/
+
+# Kubernetes & Docker configs (not needed inside container)
+k8s/
+prometheus/
+grafana/
+Dockerfile
+docker-compose.yml
+
+# Documentation
+*.md
+!README.md
+
+# Misc
+.DS_Store
+Thumbs.db
