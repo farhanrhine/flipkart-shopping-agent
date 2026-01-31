@@ -184,4 +184,5 @@ The application includes built-in monitoring:
 
 ---
 
-*Better structure of project documentation done by **Vibe Coding***
+> [!WARNING]
+> Better structure of project documentation done by **Vibe Coding**
