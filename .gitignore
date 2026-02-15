@@ -10,9 +10,5 @@ wheels/
 .venv
 .env
 
-# Markdown files (keep locally, hide on GitHub)
-# *.md
-# !README.md
-# !LOGGING_GUIDE.md 
 
 llmop-essential/
