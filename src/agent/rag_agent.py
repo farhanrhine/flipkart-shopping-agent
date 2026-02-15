@@ -133,7 +133,7 @@ Remember: You are an e-commerce assistant helping customers make informed decisi
         # Invoke the agent
         response = self.agent.invoke({
             "messages": messages
-        })
+        }) # type: ignore
         
         # Extract the answer from response
         answer = ""
@@ -144,7 +144,7 @@ Remember: You are an e-commerce assistant helping customers make informed decisi
             elif isinstance(last_message, dict):
                 answer = last_message.get("content", "")
         elif hasattr(response, "content"):
-            answer = response.content
+            answer = response.content # type: ignore
         else:
             answer = str(response)
         
@@ -169,7 +169,7 @@ Remember: You are an e-commerce assistant helping customers make informed decisi
         messages = list(history.messages) + [{"role": "user", "content": query}]
         
         full_response = ""
-        for chunk in self.agent.stream({"messages": messages}):
+        for chunk in self.agent.stream({"messages": messages}): # type: ignore
             if isinstance(chunk, dict) and "messages" in chunk:
                 content = chunk["messages"][-1].get("content", "")
                 if content:
