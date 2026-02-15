@@ -31,16 +31,12 @@ data:
           - targets: ['localhost:9090']
 
       # Scrape Flask app metrics
-      # NOTE: Uses Kubernetes service name for internal communication
       - job_name: 'flask-app'
         metrics_path: /metrics
         static_configs:
-          # Use Kubernetes service name (matches flask-deployment.yaml)
-          - targets: ['flask-service.default.svc.cluster.local:80']
-        # Alternative: Use external IP (uncomment if needed)
-        # static_configs:
-        #   - targets: ['<your-node-ip>:80']
+          - targets: ['<VM-External-IP>:5000']  # e.g., ['34.42.228.136:5000']
 
+      # this is not used in this project but can be useful for future auto-discovery of pods with Prometheus annotations
       # Auto-discover pods with Prometheus annotations
       # This will find any pod with prometheus.io/scrape: "true"
       - job_name: 'kubernetes-pods'

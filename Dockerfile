@@ -18,6 +18,9 @@
 FROM python:3.12-slim
 
 # Set working directory inside container
+# - Creates isolated /app folder inside the container (not on your local machine)
+# - All subsequent commands (COPY, RUN, CMD) execute within this directory
+# - Keeps application files organized and prevents conflicts with system files
 WORKDIR /app
 
 # Set environment variables
