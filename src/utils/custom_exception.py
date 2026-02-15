@@ -2,15 +2,15 @@ import sys
 import traceback 
 
 class CustomException(Exception):
-    def __init__(self, error_message: str, error_detail:sys):
+    def __init__(self, error_message: str, error_detail:sys): # type: ignore
         super().__init__(error_message) 
         self.error_message = error_message
         self.error_detail = error_detail
 
     def __str__(self):
         _, _, exc_tb = self.error_detail.exc_info()
-        file_name = exc_tb.tb_frame.f_code.co_filename
-        line_number = exc_tb.tb_lineno
+        file_name = exc_tb.tb_frame.f_code.co_filename # type: ignore
+        line_number = exc_tb.tb_lineno # type: ignore
         return (f"Error occurred in file [{file_name}], line [{line_number}]: {self.error_message}")
 
 
