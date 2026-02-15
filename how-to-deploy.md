@@ -142,82 +142,145 @@ git push origin main
 
 ---
 
-### 5. Build and Deploy your APP on VM
+### 5. Build and Deploy Your APP on VM (Complete Guide)
 
+**STEP 1: Point Docker to Minikube**
 ```bash
-## Point Docker to Minikube (Important!)
 eval $(minikube docker-env)
+```
+This tells Docker to use Minikube's internal Docker daemon (important!)
 
-## Build the image
+**STEP 2: Build the Docker Image**
+```bash
 docker build -t flask-app:latest .
+```
 
-## Create Secrets (Replace "..." with your actual keys)
+**STEP 3: Create Kubernetes Secrets**
+Replace `"..."` with your actual credentials from AstraDB, Groq, and HuggingFace:
+```bash
 kubectl create secret generic flipkart-secrets \
-  --from-literal=ASTRA_DB_API_ENDPOINT="..." \
-  --from-literal=ASTRA_DB_APPLICATION_TOKEN="..." \
+  --from-literal=ASTRA_DB_API_ENDPOINT="https://your-astradb-endpoint..." \
+  --from-literal=ASTRA_DB_APPLICATION_TOKEN="your-token-here..." \
   --from-literal=ASTRA_DB_KEYSPACE="flipkart" \
-  --from-literal=GROQ_API_KEY="..." \
-  --from-literal=HUGGINGFACEHUB_API_TOKEN="..."
+  --from-literal=GROQ_API_KEY="your-groq-key..." \
+  --from-literal=HUGGINGFACEHUB_API_TOKEN="your-huggingface-token..."
+```
 
-## Deploy the app
+**STEP 4: Create Monitoring Namespace**
+```bash
+kubectl create namespace monitoring
+kubectl get ns  # Verify it was created
+```
+
+**STEP 5: Deploy All Services (Order Matters!)**
+```bash
+# 1. Deploy Flask App
 kubectl apply -f flask-deployment.yaml
 
-
-## Check status
-kubectl get pods
-
-### U will see pods running
-
-
-## Port Forward to access
-kubectl port-forward svc/flask-service 5000:80 --address 0.0.0.0
-
-## Now copy external ip and :5000 and see ur app there....
-```
-
-### 6. PROMETHEUS AND GRAFANA MONITORING OF YOUR APP
-
-```bash
-## Open another VM terminal 
-
-kubectl create namespace monitoring
-
-kubectl get ns
-
-
-## Apply Monitoring Configs
+# 2. Deploy Prometheus Config
 kubectl apply -f prometheus/prometheus-configmap.yaml
 
+# 3. Deploy Prometheus 
 kubectl apply -f prometheus/prometheus-deployment.yaml
 
+# 4. Deploy Grafana
 kubectl apply -f grafana/grafana-deployment.yaml
-
-## Check target health also..
-## On IP:9090
-kubectl port-forward --address 0.0.0.0 svc/prometheus-service -n monitoring 9090:9090
-
-## Username:Pass --> admin:admin123
-kubectl port-forward --address 0.0.0.0 svc/grafana-service -n monitoring 3000:3000
-
-
-
-## Configure Grafana
-# 1. Login (admin/admin123)
-# 2. Go to Settings > Data Sources > Add Data Source
-# 3. Choose Prometheus
-# 4. URL: http://prometheus-service.monitoring.svc.cluster.local:9090
-# 5. Click Save & Test
-# 6. Green success mesaage shown....
-
-
-######################################
-
-
-# Now make a dashboard for different visualization
-# See course video for that....
 ```
 
-### 7. PROJECT STRUCTURE REFERENCE
+**STEP 6: Verify All Pods are Running**
+```bash
+# Check default namespace (Flask app)
+kubectl get pods
+
+# Check monitoring namespace (Prometheus & Grafana)
+kubectl get pods -n monitoring
+
+# Both should show STATUS: Running
+```
+
+### 6. Access Your Application & Monitoring
+
+**Open 3 separate terminal windows on the VM and run these port-forward commands:**
+
+**Terminal 1: Flask App (Port 5000)**
+```bash
+kubectl port-forward svc/flask-service 5000:80 --address 0.0.0.0
+```
+- Access app: `http://<VM-External-IP>:5000`
+
+**Terminal 2: Prometheus Metrics (Port 9090)**
+```bash
+kubectl port-forward -n monitoring svc/prometheus-service 9090:9090 --address 0.0.0.0
+```
+- Access: `http://<VM-External-IP>:9090`
+- View targets: `http://<VM-External-IP>:9090/targets`
+- View metrics: `http://<VM-External-IP>:9090/graph`
+
+**Terminal 3: Grafana Dashboard (Port 3000)**
+```bash
+kubectl port-forward -n monitoring svc/grafana-service 3000:3000 --address 0.0.0.0
+```
+- Access: `http://<VM-External-IP>:3000`
+- Default login: **admin / admin123**
+
+### 7. Configure Grafana to Show Metrics
+
+1. **Login to Grafana** (http://<VM-External-IP>:3000)
+   - Username: `admin`
+   - Password: `admin123`
+
+2. **Add Prometheus Data Source:**
+   - Go to: Settings (gear icon) → Data Sources
+   - Click: "Add data source"
+   - Choose: **Prometheus**
+   - URL: `http://prometheus-service.monitoring.svc.cluster.local:9090`
+   - Click: "Save & Test"
+   - You should see: ✓ "Datasource is working"
+
+3. **Create Dashboards:**
+   - Go to: Dashboards → New Dashboard
+   - Add panels to visualize:
+     - `flask_request_total` : Total API requests
+     - `flask_request_latency_seconds` : Response times
+     - `chat_response_latency_seconds` : RAG agent response time
+     - `active_sessions` : Active chat sessions
+   - Save your dashboard
+
+### 8. Troubleshooting Deployment
+
+**If pods are stuck in "Pending":**
+```bash
+kubectl describe pod <pod-name>
+kubectl describe pod -n monitoring <pod-name>
+```
+
+**If cannot connect to services:**
+```bash
+# Check service endpoints
+kubectl get svc
+kubectl get svc -n monitoring
+
+# Check pod logs
+kubectl logs <pod-name>
+kubectl logs -n monitoring <pod-name>
+```
+
+**To restart deployment:**
+```bash
+kubectl rollout restart deployment/flask-app
+kubectl rollout restart deployment/prometheus -n monitoring
+kubectl rollout restart deployment/grafana -n monitoring
+```
+
+**To delete everything and start over:**
+```bash
+kubectl delete -f flask-deployment.yaml
+kubectl delete -f prometheus/
+kubectl delete -f grafana/
+kubectl delete namespace monitoring
+```
+
+### 9. PROJECT STRUCTURE REFERENCE
 
 ```
 flipkart-shopping-agent/
