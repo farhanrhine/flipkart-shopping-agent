@@ -99,7 +99,31 @@ We use **AstraDB (Cassandra)** as our vector store to enable semantic search cap
 
 ---
 
-## 🛠️ Tech Stack
+## � AstraDB Database Metrics
+
+Our AstraDB instance is optimized for high-performance vector search with the following characteristics:
+
+- **Collection**: `flipkart_database`
+- **Keyspace**: `flipkart`
+- **Vector Dimensions**: 768
+- **Similarity Metric**: Cosine
+- **Total Records**: 450 product reviews
+
+### Performance Monitoring
+
+![AstraDB Metrics Dashboard](astra-db.png)
+
+The database maintains consistent performance metrics:
+
+- **Request Latency**: P99 reads at ~42.3ms, P50 reads at ~31.7ms
+- **Throughput**: 3 total requests with balanced read/write operations
+- **Real-time Monitoring**: Integrated with Prometheus and Grafana for continuous performance tracking
+
+This ensures fast and reliable product recommendation retrieval for end-users.
+
+---
+
+## �🛠️ Tech Stack
 
 - **LLM**: Groq (Llama3 / Mixtral)
 - **Embeddings**: HuggingFace (`BAAI/bge-base-en-v1.5`)
