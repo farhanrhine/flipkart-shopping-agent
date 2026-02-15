@@ -318,11 +318,9 @@ kubectl port-forward svc/flask-service 5000:80 --address 0.0.0.0
 
 - if you get error  then check firewall rules and make sure you have allowed traffic on port 5000, also check the pod status and logs to ensure the Flask app is running correctly.
 
-
 <span style="color:red;">============ till here you have successfully deployed your Flask app and set up port forwarding to access it externally. Now let's deploy the monitoring components (Prometheus and Grafana) to monitor your application. ============</span>
 
 ```bash
-
 # 2. Deploy Prometheus Config
 kubectl apply -f prometheus/prometheus-configmap.yaml
 
