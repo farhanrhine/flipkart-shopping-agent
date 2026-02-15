@@ -2,7 +2,7 @@ import sys
 import traceback 
 
 class CustomException(Exception):
-    def __init__(self, error_message: str, error_detail:sys): # type: ignore
+    def __init__(self, error_message: str, error_detail:sys): # type: ignore 
         super().__init__(error_message) 
         self.error_message = error_message
         self.error_detail = error_detail
