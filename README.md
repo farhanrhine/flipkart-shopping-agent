@@ -39,14 +39,14 @@ flipkart-shopping-agent/
 │       ├── custom_exception.py      # ⚠️ Error handling
 │       └── logger.py                # 📝 System logging
 ├── static/
-│   └── style.css                    # 🎨 Frontend styling (Done by Vibe Coding)
+│   └── style.css                    # 🎨 Frontend styling
 ├── templates/
-│   └── index.html                   # 🖥️ Frontend UI (Done by Vibe Coding)
-├── app.py                           # 🏁 Flask Application Entry Point (Done by Vibe Coding)
+│   └── index.html                   # 🖥️ Frontend UI (Chat interface)
+├── app.py                           # 🏁 Flask Application Entry Point
 ├── Dockerfile                       # 🐳 Docker build instructions
-├── flask-deployment.yaml            # ☸️ Main Kubernetes App Deployment
+├── flask-deployment.yaml            # ☸️ Kubernetes Deployment
 ├── pyproject.toml                   # 🐍 Python dependencies
-├── FULL-DOCUMENTATION.md            # 📚 Detailed Deployment Guide
+├── how-to-deploy.md                 # 📚 Deployment Guide
 ├── README.md                        # 📖 Project Overview
 └── .gitignore                       # 🙈 Git ignore rules
 ```
@@ -107,7 +107,6 @@ We use **AstraDB (Cassandra)** as our vector store to enable semantic search cap
 - **Framework**: LangChain (Latest `create_agent` API, Tool Calling)
 - **Backend**: Flask (Python)
 - **Frontend**: HTML5, CSS3 (Flipkart Theme)
-- **Monitoring**: Prometheus & Grafana
 - **Containerization**: Docker
 - **Orchestration**: Kubernetes (Minikube / GKE)
 
@@ -122,11 +121,10 @@ We use **AstraDB (Cassandra)** as our vector store to enable semantic search cap
    cd flipkart-shopping-agent
    ```
 
-2. **Install Dependencies**
+2. **Install Dependencies with `uv`**
 
    ```bash
-   pip install uv
-   uv pip install -r pyproject.toml
+   uv sync
    ```
 
 3. **Set up Environment Variables**
@@ -167,22 +165,29 @@ If you want to understand or modify the code, here are the most important files:
 
 ---
 
-## 📦 Deployment
+## 🚀 Deployment
 
-For full deployment instructions on **Google Cloud Platform (GCP)** using **Minikube** and **Kubernetes**, please refer to:
+To deploy to **Kubernetes**, use the provided deployment configuration:
 
-👉 [**FULL-DOCUMENTATION.md**](FULL-DOCUMENTATION.md)
+```bash
+kubectl apply -f flask-deployment.yaml
+```
 
----
+For complete cloud deployment instructions on **Google Cloud Platform (GCP)** using **Minikube**, refer to:
 
-## 📊 Monitoring
-
-The application includes built-in monitoring:
-
-- **Prometheus**: `/metrics` endpoint
-- **Grafana**: Visual dashboards for request latency and error rates
+👉 [**how-to-deploy.md**](how-to-deploy.md)
 
 ---
 
 > [!NOTE]
-> **Acknowledgement:** Project structure, documentation, Flask backend, frontend, and Docker/YAML configurations were refined by **Vibe Coding**.
+> **This is a complete production-ready AI application** combining:
+> - Modern LLM architectures (RAG with LangChain)
+> - Cloud databases (AstraDB)
+> - Web frameworks (Flask)
+> - Container orchestration (Kubernetes on GCP/Minikube)
+
+---
+
+## 👤 Author
+
+**Farhan**
