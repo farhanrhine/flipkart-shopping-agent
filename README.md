@@ -19,36 +19,54 @@ This project follows a modern **LLMOps** workflow, integrating data ingestion, v
 
 ```bash
 flipkart-shopping-agent/
-├── .github/                   # 🤖 GitHub Actions workflows
+├── .env                         # 🔐 Environment variables
+├── .env.example                 # 📋 Example environment template
+├── .python-version              # 🐍 Python version specification
+├── .gitignore                   # 🙈 Git ignore rules
+├── .dockerignore                # 🐳 Docker ignore rules
+├── .git/                        # 📦 Git repository
 ├── data/                      
 │   └── flipkart_product_review.csv  # 💾 Raw dataset
+├── docs/                        # 📚 Documentation
+│   └── GCP-MINIKUBE-FLASK-DOCKER-PROMETHEUS-GRAFANA-DEPLOYMENT.md  # 📚 Deployment Guide
 ├── grafana/
 │   └── grafana-deployment.yaml      # 📈 Grafana K8s deployment
+├── logs/                        # 📝 Application logs
 ├── prometheus/
 │   ├── prometheus-configmap.yaml    # ⚙️ Monitoring config
 │   └── prometheus-deployment.yaml   # 🔍 Prometheus K8s deployment
 ├── src/
+│   ├── __init__.py              # 📦 Package initialization
 │   ├── agent/
-│   │   └── rag_agent.py             # 🧠 Main RAG Logic (LangChain)
+│   │   ├── __init__.py
+│   │   └── rag_agent.py         # 🧠 Main RAG Logic (LangChain)
 │   ├── config/
-│   │   └── settings.py              # ⚙️ Environment settings
+│   │   ├── __init__.py
+│   │   └── settings.py          # ⚙️ Environment settings
 │   ├── pipeline/
-│   │   ├── data_converter.py        # 🔄 CSV to Document converter
-│   │   └── data_ingestion.py        # 💉 AstraDB Ingestion script
+│   │   ├── __init__.py
+│   │   ├── data_converter.py    # 🔄 CSV to Document converter
+│   │   ├── data_ingestion.py    # 💉 AstraDB Ingestion script
+│   │   ├── flowofpipeline.png   # 📊 Pipeline diagram
+│   │   └── vector-data-details.png  # 📊 Vector data diagram
 │   └── utils/
-│       ├── custom_exception.py      # ⚠️ Error handling
-│       └── logger.py                # 📝 System logging
+│       ├── __init__.py
+│       ├── custom_exception.py  # ⚠️ Error handling
+│       └── logger.py            # 📝 System logging
 ├── static/
-│   └── style.css                    # 🎨 Frontend styling
+│   └── style.css                # 🎨 Frontend styling
 ├── templates/
-│   └── index.html                   # 🖥️ Frontend UI (Chat interface)
-├── app.py                           # 🏁 Flask Application Entry Point
-├── Dockerfile                       # 🐳 Docker build instructions
-├── flask-deployment.yaml            # ☸️ Kubernetes Deployment
-├── pyproject.toml                   # 🐍 Python dependencies
-├── how-to-deploy.md                 # 📚 Deployment Guide
-├── README.md                        # 📖 Project Overview
-└── .gitignore                       # 🙈 Git ignore rules
+│   └── index.html               # 🖥️ Frontend UI (Chat interface)
+├── app.py                       # 🏁 Flask Application Entry Point
+├── main.py                      # 🚀 Alternative entry point
+├── Dockerfile                   # 🐳 Docker build instructions
+├── flask-deployment.yaml        # ☸️ Kubernetes Deployment
+├── pyproject.toml               # 🐍 Python dependencies
+├── uv.lock                      # 🔒 Locked dependencies (uv)
+├── architecture.png             # 📐 System architecture diagram
+├── astra-db.png                 # 📊 AstraDB metrics dashboard
+├── example.env                  # 📋 Example environment file
+└── README.md                    # 📖 Project Overview
 ```
 
 ---
@@ -199,7 +217,7 @@ kubectl apply -f flask-deployment.yaml
 
 For complete cloud deployment instructions on **Google Cloud Platform (GCP)** using **Minikube**, refer to:
 
-👉 [**how-to-deploy**](GCP-MINIKUBE-FLASK-DOCKER-PROMETHEUS-GRAFANA-DEPLOYMENT.md)
+👉 [**how-to-deploy**](docs/GCP-MINIKUBE-FLASK-DOCKER-PROMETHEUS-GRAFANA-DEPLOYMENT.md)
 
 ---
 
