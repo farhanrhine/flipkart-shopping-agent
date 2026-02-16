@@ -45,7 +45,7 @@ spec:
             - name: GF_SECURITY_ADMIN_USER
               value: "admin"
             - name: GF_SECURITY_ADMIN_PASSWORD
-              value: "admin123"  # Change this in production!
+              value: "admin123"  # Change this in production! bez this  is default password for Grafana admin user, so make sure to change it in production for security reasons.
           
           # Persist Grafana data
           volumeMounts:

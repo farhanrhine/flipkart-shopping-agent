@@ -1,279 +1,295 @@
 ### 1. Initial Setup
 
-- **Push code to GitHub**  
-  Push your project code to a GitHub repository.
+**Prerequisites:**
+- Push code to GitHub
+- Create a `Dockerfile` in project root
+- Create `flask-deployment.yaml` file
 
-- **Create a Dockerfile**  
-  Write a `Dockerfile` in the root of your project to containerize the app.
+**Create VM Instance on Google Cloud:**
 
-- **Create Kubernetes Deployemtn file**  
-  Make a file named 'flask-deployment.yaml'
+1. Go to VM Instances and click **"Create Instance"**
+2. Configure instance:
+   - **Name:** `flipkart-agent-vm`
+   - **Machine Type:**
+     - Series: `E2`
+     - Preset: `Standard`
+     - Memory: `16 GB RAM`
+   - **Boot Disk:**
+     - Size: `256 or 150 GB`
+     - Image: **Ubuntu 24.04 LTS x86_64 amd64 noble build in 2025-06-06**
+     - Cost: ~$0.15/hour = ~$112.84/month (AWS charges 2-3x more for similar specs)
+   - **Networking & Firewall:**
+     - Enable HTTP and HTTPS traffic and load balancing (opens ports 80, 443)
+     - **Enable IP forwarding** (important for Kubernetes inside VM)
+     - Rest left as default
+3. Click **Create** to launch (takes 1-2 minutes)
 
-- **Create a VM Instance on Google Cloud**
+**Connect to the VM:**
 
-  - Go to VM Instances and click **"Create Instance"**
-  - Name: `flipkart-agent-vm`
-  - In machine configuration set Machine Type:
-    - Series: `E2`
-    - Preset: `Standard`
-    - Memory: `16 GB RAM`
-  - IN a os and storage set Boot Disk:
-    - Change size to `256 or 150 GB`
-    - Image: Select **Ubuntu 24.04 LTS x86_64 amd64 noble build in 2025-06-06**
-    - its charge around $0.15 per hour, which is around $112.84 per month (you can stop the VM when not in use to save costs) . aws charge 2-3 times more for similar configuration, so google cloud is a better choice for this project.
-  - Networking on firewall:
-    - Enable HTTP and HTTPS traffic and load balancing (this will open ports 80 and 443, we will also open custom ports later for our app and monitoring)
-    - enable ip forwarding (important for kubernetes to work properly inside the VM)
-    - rest left as default and click **Create** to launch the VM instance. It will take around 1-2 minutes to be fully up and running. You can see the status in the VM instances dashboard. Once it's running,
-
-- **Create the Instance**
-
-- **Connect to the VM**
-  - Use the **SSH** option provided to connect to the VM from the browser.
-  - click on the SSH button next to your VM instance in the Google Cloud Console. This will open a new browser window with a terminal connected to your VM. You can run commands directly in this terminal to set up your environment and deploy your application.
-  - its asked authorize the browser to access your Google Cloud resources, click **Allow** to proceed. This will establish a secure SSH connection to your VM instance, allowing you to manage it from the terminal.
-  - type `clear` command to clear the terminal and start with a clean slate.
+- Click **SSH** button next to your VM in Google Cloud Console
+- Browser opens with terminal connected to your VM
+- Click **Allow** when asked to authorize
+- Type `clear` to clean the terminal
 
 
 
-### 2. Configure VM Instance
+### 2. Install Docker on VM
 
-- **Install Docker**
+**Install Docker:**
 
-  - Search: "Install Docker on Ubuntu"
-  - Open the first official Docker website (docs.docker.com)
-  - Scroll down and copy the **Install using the apt repository** sectioon  and paste into your VM terminal or click here https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository 
+1. Search: "Install Docker on Ubuntu"
+2. Go to official Docker website (docs.docker.com)
+3. Find **Install using the apt repository** section: https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository
+4. Paste commands into your VM terminal
+5. If asked Yes/No, type `Y` and press Enter
+6. Test Docker:
 
-  - copy all latest version commands , specific version will be advanced used case based on project requirements.
+   ```bash
+   sudo docker run hello-world
+   ```
+   You should see "Hello from Docker!" confirming successful installation.
 
-  - Then copy  whole command from step 1  and paste the **ssh-in-browser** command, then for step 2, copy and paste the commands to install Docker on your VM.
-  - if asked Yes/No, type `Y` and press Enter to confirm the installation.
-  - Then run the **step -3 run ** to test Docker:
+**Run Docker without `sudo`:**
 
-    ```bash
-    sudo docker run hello-world
-    
-    ```
-    - You should see a message confirming that Docker is installed and working correctly. If you see this message, it means Docker is successfully installed on your VM and you can proceed to the next steps of configuring Minikube and deploying your application.
+Go to: https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user
 
-- **Run Docker without sudo**
+Paste all commands one by one to allow Docker without `sudo`
 
-  - On the same page, scroll to: **"Post-installation steps for Linux"** OR CLICK HERE https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user 
-  - Paste all 4 commands one by one to allow Docker without `sudo`
-  - Last command is for testing
+**Enable Docker to Start on Boot:**
 
-- **Now Enable some Docker services to start on boot**
+Go to: https://docs.docker.com/engine/install/linux-postinstall/#configure-docker-to-start-on-boot-with-systemd
 
-  - On the same page, scroll down to: **"Configure Docker to start on boot with systemd"** or click here https://docs.docker.com/engine/install/linux-postinstall/#configure-docker-to-start-on-boot-with-systemd
-  - Copy and paste the command block (2 commands):
-
-    ```bash
-    sudo systemctl enable docker.service
-    sudo systemctl enable containerd.service
-    ```
-  - basically its automatically starts the Docker service when the VM boots up, so you don't have to manually start it every time.
-
-- **Verify Docker Setup**
-
-  ```bash
-  docker --version              # Should show Docker version
-  systemctl status docker       # You should see "active (running)"
-  docker ps                     # No container should be running
-  docker ps -a                 # Should show "hello-world" exited container
-  ```
-
-### 3. Configure Minikube inside VM after docker bez its dependency depend upon docker to run the cluster, so we need to install docker first and then minikube. Minikube will use the Docker engine inside the VM to create and manage the Kubernetes cluster.
-
-- **Install Minikube**
-
-  - Open browser and search: `Install Minikube`
-  - Open the first official site (https://minikube.sigs.k8s.io/docs/start/?arch=%2Fwindows%2Fx86-64%2Fstable%2F.exe+download) with `minikube start` on it
-
-  - Go installation section Choose:
-    - **OS:** Linux
-    - **Architecture:** *x86*
-    - Release: **Stable**
-    - Select **Binary download**
-  - Reminder: You have already done this on Windows, so you're familiar with how Minikube works
-
-- **Install Minikube Binary on VM**
-
-  - Copy and paste the 2 installation commands from the website into your VM terminal to download and install Minikube:
-
-    ```bash
-    curl -LO https://github.com/kubernetes/minikube/releases/latest/download/minikube-linux-amd64
-
-    sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
-    ```
-
-- **Start Minikube Cluster**
-
-  ```bash
-  minikube start
-  ```
-  - this is basically your kubernetes cluster running inside the VM, and it will use Docker to create the necessary containers for the cluster components. You should see output indicating that Minikube is starting and setting up the cluster. This may take a few minutes.
-
-  - This uses Docker internally, which is why Docker was installed first
-
-- **Now Install kubectl**
-
-  - Search: `Install kubectl linux` or click here https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-binary-with-curl-on-linux 
-
-  - go to installation section and choose x86 architecture and copy the 1st commands to install kubectl on your VM terminal:
-  - Run the first command this  
-  ```bash
-  curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-  ```
-
-
-  - Run the second command to validate the download
-  ```bash
-     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
-  ```
-
-  - Instead of installing manually, go to the **Snap section** (below on the same page) name Install using other package management  bez we using ubuntu and snap is already installed on ubuntu, so we can use snap to install kubectl easily with one command, so copy and paste the snap command to install kubectl  or click here(https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-other-package-management):
-  
-  - sudo need before snap command because snap needs root permissions to install packages, so make sure to include `sudo` when running the command to install kubectl with snap. The `--classic` flag is used to allow kubectl to access system resources that it needs to function properly, which is necessary for kubectl to work correctly on your VM.
-
-  ```bash
-  sudo snap install kubectl --classic
-  ```
-
-  - Verify installation:
-
-    ```bash
-    kubectl version --client
-    ```
-
-- **Check Minikube Status**
-
-  ```bash
-  minikube status         # Should show all components running
-  kubectl get nodes       # Should show minikube node
-  kubectl cluster-info    # Cluster info
-  docker ps               # Minikube container should be running
-  ```
-
-  
-  - **<span style="color:red;">Important Note</span>**: 
-    Update the `prometheus-configmap.yaml` file's `scrape_configs` section to point to your Flask app by replacing `<VM-External-IP>` with your actual external IP address:
-    
-    ```yaml
-    scrape_configs:
-      - job_name: 'prometheus'
-        static_configs:
-          - targets: ['localhost:9090']
-      
-      - job_name: 'flask-app'
-        metrics_path: /metrics
-        static_configs:
-          - targets: ['<VM-External-IP>:5000']  # e.g., ['34.42.228.136:5000']
-    ```
-    
-    **Why this is needed:** Prometheus has two scrape targets:
-    - **Target 1** (`localhost:9090`): Prometheus scrapes its own metrics to monitor itself
-    - **Target 2** (`<VM-External-IP>:5000`): Prometheus scrapes your Flask app's metrics to monitor the application
-    
-    Without this configuration, Prometheus won't be able to connect to your Flask app and will report "no targets available". This ensures your application's performance metrics (request count, latency, errors) are properly collected and available for visualization in Grafana.
-
-
-
-
-
-
-- **Clone your GitHub repo**
-
-  ```bash
-  git clone https://github.com/farhanrhine/flipkart-shopping-agent.git 
-  ls
-  cd flipkart-shopping-agent
-  ls  # You should see the contents of your project
-  ```
-
-### 4. Interlink your Github on VSCode and on VM
- - all 3 need to conneted local vscode , github and gcp vm to push code from local to github and then pull it on vm to deploy, so we need to set up git on the VM and connect it to our GitHub account.
+Paste the commands:
 
 ```bash
-git config --global user.email "mohammadfarhanalam09@gmail.com" # your email
-git config --global user.name "farhanrhine" # your github username
-
-git add .
-git commit -m "commit"
-git push origin main
+sudo systemctl enable docker.service
+sudo systemctl enable containerd.service
 ```
 
-- When prompted:
-  - **Username**: `farhanrhine` (your GitHub username)
-  - **Password**: GitHub token (paste, it's invisible) not github password, you need to generate a personal access token on GitHub and use it as the password for authentication when pushing from the VM. This is a security measure implemented by GitHub to enhance account security, as they no longer allow direct password authentication for Git operations. Instead, you must use a personal access token, which can be generated in your GitHub account settings under Developer settings → Personal access tokens. Make sure to grant the necessary scopes (like `repo` and `read:packages`) when creating the token, and then copy it to use as the password when prompted during the git push operation from your VM.
+This automatically starts Docker service when VM boots.
 
-  - how to get GitHub token:
-    - Go to GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token
-    - Name: `VM Deployment Token`
-    - Expiration: `No expiration`
-    - Scopes: Check `repo` ,`workflow`, `admin-org`, `admin:repo_hook`, `admin:org_hook` # these scopes are necessary for pushing code and managing repositories from the VM( you can give more based on needs).
-    - Click: "Generate token"
-    - Copy the generated token (you won't see it again) and use it as the password when pushing from the VM.
-    - you see message : everything up to date, it means your code is already pushed to GitHub and you can proceed to pull it on the VM for deployment.
-    - now lets say you create new file test.py local in vscode and push on github, then you can pull it on vm with `git pull origin main` command to get the latest code changes before building and deploying your app.
-    - this we called version control and it's essential for managing code changes across different environments (local, GitHub, VM) and ensuring that you can easily update and maintain your application as you develop it further.
-    - this will same process you will follow for any future code changes, just commit and push from local vscode to GitHub, then pull on VM before building and deploying the updated app.
+**Verify Docker Setup:**
+
+```bash
+docker --version              # Should show Docker version
+systemctl status docker       # Should see "active (running)"
+docker ps                     # No container should be running
+docker ps -a                  # Should show "hello-world" exited container
+```
+
+### 3. Install and Configure Minikube & kubectl
+
+Minikube is a dependency of Docker - we need Docker first, then Minikube. Minikube will use the Docker engine inside the VM to create and manage the Kubernetes cluster.
+
+**Install Minikube:**
+
+Go to: https://minikube.sigs.k8s.io/docs/start/
+
+Select:
+- **OS:** Linux
+- **Architecture:** x86
+- **Release:** Stable
+- **Driver:** Binary download
+
+Copy and paste the 2 installation commands:
+
+```bash
+curl -LO https://github.com/kubernetes/minikube/releases/latest/download/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
+```
+
+**Start Minikube Cluster:**
+
+```bash
+minikube start
+```
+
+This creates your Kubernetes cluster running inside the VM using Docker. This may take a few minutes. You should see output indicating Minikube is setting up the cluster.
+
+**Install kubectl (Kubernetes CLI):**
+
+Go to: https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-other-package-management
+
+Install using Snap (easiest for Ubuntu since snap is pre-installed):
+
+```bash
+sudo snap install kubectl --classic
+```
+
+The `--classic` flag allows kubectl to access system resources it needs on your VM.
+
+Verify installation:
+
+```bash
+kubectl version --client
+```
+
+**Check Minikube Status:**
+
+```bash
+minikube status         # Should show all components running
+kubectl get nodes       # Should show minikube node
+kubectl cluster-info    # Shows cluster information
+docker ps               # Minikube container should be running
+```
+
+  
+> ⚠️ **IMPORTANT BEFORE DEPLOYING:**
+>
+> Update the `prometheus-configmap.yaml` file's `scrape_configs` section. Replace `<VM-External-IP>` with your actual external IP address:
+>
+> ```yaml
+> scrape_configs:
+>   - job_name: 'prometheus'
+>     static_configs:
+>       - targets: ['localhost:9090']
+>   
+>   - job_name: 'flask-app'
+>     metrics_path: /metrics
+>     static_configs:
+>       - targets: ['<VM-External-IP>:5000']  # e.g., ['34.42.228.136:5000']
+> ```
+>
+> **Why this is needed:** Prometheus has two scrape targets:
+> - **Target 1** (`localhost:9090`): Prometheus monitors itself
+> - **Target 2** (`<VM-External-IP>:5000`): Prometheus monitors your Flask app
+>
+> Without this configuration, Prometheus won't connect to your Flask app. This ensures your application's performance metrics are properly collected for Grafana visualization.
+
+
 
 ---
 
-### 5. set up gcp firewall rules to allow traffic on custom ports
-- By default, only ports 80 and 443 are open for HTTP and HTTPS traffic. Since our Flask app and monitoring tools will be running on different ports (5000 for Flask, 9090 for Prometheus, and 3000 for Grafana), we need to create custom firewall rules to allow incoming traffic on these ports.
+### 4. Clone Repository & Configure Git
 
-- **Create Firewall Rules:**
-  - Go on gcp search firewall choose the VPC network → Firewall rules in the Google Cloud Console.
-  - Click on "Create Firewall Rule"
-  - Name: `allow-flask-prometheus-grafana` # you can choose any name, just make it descriptive
-  - Network: Select the default network (or the one your VM is in)
-  - Direction of traffic: Ingress
-  - Action on match: Allow
-  - Targets: All instances in the network (or specify your VM instance)
-  - source filter: IPv4 ranges
-  - Source IP ranges: `0.0.0.0/0` (allows traffic from any IP address)
-  - in protocols and ports:
-    - selected Allow all options bez we need the ports this enable below ports to be accessible from outside the VM:
-      - Protocol: TCP, Port: 5000 (for Flask app)
-      - Protocol: TCP, Port: 9090 (for Prometheus)
-      - Protocol: TCP, Port: 3000 (for Grafana)
-  - Click "Create" to save the firewall rule.
+You need to connect 3 environments: local VSCode → GitHub → GCP VM. This allows you to push changes from local to GitHub, then pull them on the VM for deployment.
+
+**Clone your GitHub repository:**
+
+```bash
+git clone https://github.com/farhanrhine/flipkart-shopping-agent.git
+cd flipkart-shopping-agent
+ls  # Verify you see all project files
+```
+
+**Configure Git on VM:**
+
+```bash
+git config --global user.email "your-email@example.com"    # Your email
+git config --global user.name "your-github-username"        # Your GitHub username
+```
+
+**Using GitHub Personal Access Token (Required):**
+
+GitHub no longer allows password authentication for Git operations. You must use a Personal Access Token instead.
+
+**How to get GitHub token:**
+
+1. Go to GitHub → **Settings → Developer settings → Personal access tokens → Tokens (classic)**
+2. Click **Generate new token**
+3. Configure:
+   - **Name:** `VM Deployment Token`
+   - **Expiration:** `No expiration`
+   - **Scopes:** Check:
+     - `repo` (for repository access)
+     - `workflow` (for GitHub Actions)
+     - `admin-org` (for organization management)
+     - `admin:repo_hook` (for webhooks)
+     - `admin:org_hook` (for organization webhooks)
+4. Click **Generate token**
+5. **Copy the token** (you won't see it again!)
+
+**Version Control Workflow:**
+
+1. Make changes locally in VSCode
+2. Push to GitHub:
+   ```bash
+   git add .
+   git commit -m "your message"
+   git push origin main
+   ```
+3. When prompted:
+   - **Username:** Your GitHub username
+   - **Password:** Paste your Personal Access Token (invisible when pasting)
+4. Pull latest changes on VM before deploying:
+   ```bash
+   git pull origin main
+   ```
+
+This is called version control - it's essential for managing code changes across different environments and ensuring you can easily update and maintain your application as you develop it.
+
+---
+
+### 5. Configure GCP Firewall Rules
+
+By default, only ports 80 (HTTP) and 443 (HTTPS) are open. We need to allow custom ports for:
+- **5000** - Flask app
+- **9090** - Prometheus metrics  
+- **3000** - Grafana dashboard
+
+**Create Firewall Rule:**
+
+1. Go to Google Cloud Console → **Compute Engine → VPC networks → Firewall rules**
+2. Click **"Create Firewall Rule"**
+3. Configure:
+   - **Name:** `allow-flask-prometheus-grafana` (or any descriptive name)
+   - **Network:** Select the default network (or the one your VM is in)
+   - **Direction of traffic:** Ingress
+   - **Action on match:** Allow
+   - **Targets:** All instances in the network (or specify your VM instance)
+   - **Source filter:** IPv4 ranges
+   - **Source IP ranges:** `0.0.0.0/0` (allows traffic from any IP address)
+   - **Protocols and ports:**
+     - Select "Allow all" OR specify:
+       - Protocol: TCP, Port: **5000** (Flask app)
+       - Protocol: TCP, Port: **9090** (Prometheus)
+       - Protocol: TCP, Port: **3000** (Grafana)
+4. Click **"Create"** to save the firewall rule
 
 
 
 
-### 6. Build and Deploy Your APP on VM (Complete Guide)
+### 6. Build and Deploy Your Application on VM
 
-**STEP 1: find repo**
-go ssh-in-browser:
-type `clear` to clear the terminal and start with a clean slate, then follow these steps:
- type `ls` its show github repo folder name `flipkart-shopping-agent` then type `cd flipkart-shopping-agent` to go inside the project folder, then used type `clear` or type `ls` to see the contents of the project, you should see all your project files and folders.
+**Step 1: Navigate to your project folder**
 
-**STEP 2: Point Docker to Minikube**
+In the SSH browser terminal:
+
+```bash
+clear                          # Clear the terminal
+cd flipkart-shopping-agent     # Go inside the project folder
+ls                             # Verify all project files
+```
+
+**Step 2: Point Docker to Minikube**
+
 ```bash
 eval $(minikube docker-env)
 ```
-- This tells Docker to use Minikube's internal Docker daemon (important!) to build images directly inside the Minikube cluster, so they are immediately available for deployment without needing to push to an external registry.(take some time to execute, wait for it to complete before moving to the next step)
 
-**STEP 3: Build the Docker Image**
+This tells Docker to use Minikube's internal Docker daemon. Images built here are immediately available in the cluster without needing to push to an external registry. (This may take a moment to execute.)
+
+**Step 3: Build the Docker Image**
+
 ```bash
 docker build -t flask-app:latest .
 ```
 
--  this name i set in the `flask-deployment.yaml` file as the image name for the Flask app container, so it needs to match exactly for Kubernetes to find and deploy the correct image. If you change the image name here, make sure to update it in the deployment file as well(take some time to execute, wait for it to complete before moving to the next step).
+**Important:** This image name matches the `flask-deployment.yaml` file. If you change it, update the deployment file too.
 
-- verify the image is built successfully and available in Minikube's Docker registry:
+Verify the image was built:
+
 ```bash
 docker images
 ```
-You should see `flask-app` or `flask-app:latest` in the list of images.
 
+You should see `flask-app` or `flask-app:latest` in the list.
 
-**STEP 4: Create Kubernetes Secrets**
-- its need to done inside your github directory inside like this `flipkart-shopping-agent` because we need to use the credentials from the `.env` file which is in the root of the project, so make sure to navigate to the project directory before running the command to create secrets.
+**Step 4: Create Kubernetes Secrets**
 
-- Replace `"..."` with your actual credentials from AstraDB, Groq, and HuggingFace:
+This must be done in your project directory (`flipkart-shopping-agent`) since we need the credentials from the `.env` file in the project root.
+
+Replace the placeholders with your actual credentials from AstraDB, Groq, and HuggingFace:
 
 ```bash
 kubectl create secret generic flipkart-secrets \
@@ -283,140 +299,301 @@ kubectl create secret generic flipkart-secrets \
   --from-literal=GROQ_API_KEY="your-groq-key..." \
   --from-literal=HUGGINGFACEHUB_API_TOKEN="your-huggingface-token..."
 ```
-- like this you are securely storing all your sensitive credentials in Kubernetes secrets, which can then be accessed by your Flask app without hardcoding them in the code or configuration files. This is a best practice for managing sensitive information in a Kubernetes environment.
 
-- its messages secret/flipkart-secrets created, it means the secrets are successfully created in Kubernetes and you can proceed to deploy your application which will use these secrets to access the necessary services (AstraDB, Groq, HuggingFace) securely.
+This securely stores all your sensitive credentials in Kubernetes secrets. Your Flask app can access them without hardcoding them in code or configuration files. This is a best practice for managing sensitive information.
 
+Expected message: `secret/flipkart-secrets created` - means the secrets were successfully created!
 
-**STEP 5: Deploy All Services (Order Matters!)**
-- its need to done in your github directory inside like this `flipkart-shopping-agent` because we need to use the deployment files which are in the root of the project, so make sure to navigate to the project directory before running the command to deploy the services.
-# 1. Deploy Flask App
+**Step 5: Deploy Flask App**
+
+In your project directory:
 
 ```bash
-kubectl apply -f flask-deployment.yaml # the file name can be different based on what you named it, just make sure to use the correct file name for your Flask app deployment
-- its message like "deployment.apps/flask-app created" it means the Flask app deployment is successfully created in Kubernetes and you can proceed to deploy the monitoring components (Prometheus and Grafana) to monitor your application.
+kubectl apply -f flask-deployment.yaml
+```
 
-# verify Flask app is running
+Expected message: `deployment.apps/flask-app created`
+
+Verify Flask app is running:
+
+```bash
 kubectl get pods
-# You should see a pod with the name "flask-app" and its status should be "Running". If it's not running, you can check the logs with:
+```
+
+You should see a pod with name "flask-app" and status "Running". If not running, check logs:
+
+```bash
 kubectl logs <flask-app-pod-name>
 ```
 
-- currently my application is running inside the kubernetes cluster which is running inside the VM, so to access the application from outside (like from your local machine or browser), we will use port forwarding to forward the ports from the cluster to the VM, and then we have already set up firewall rules to allow traffic on those ports, so you can access the application and monitoring tools using the VM's `external IP` address and the respective ports.
+**Step 6: Create Monitoring Namespace**
 
-- used this command to check the `external IP` of your VM instance, which you will use to access your Flask app, Prometheus, and Grafana from your local machine or browser:
+Check existing namespaces:
 
 ```bash
-kubectl port-forward svc/flask-service 5000:80 --address 0.0.0.0
+kubectl get ns
 ```
--  the flask-service name i set in the `flask-deployment.yaml` file as the service name for the Flask app, so it needs to match exactly for Kubernetes to forward the correct service ports. If you change the service name in the deployment file, make sure to update it here as well.
-- why `--address 0.0.0.0`? This allows the port forwarding to accept connections from any IP address, which is necessary for accessing the service from outside the VM (like from your local machine or browser). Without this flag, the port forwarding would only accept connections from localhost (the VM itself), and you wouldn't be able to access it externally.
 
-- now you can open a new terminal window (keep the port forwarding running in the first terminal) and run the following command to forward Prometheus port:
-
-- you see message like "Forwarding from 0.0.0.0 -> 5000" it means the port forwarding is successfully set up and you can now access your Flask app using the VM's external IP address and port 5000 (e.g., `http://<VM-External-IP>:5000`).
-
-- if you get error  then check firewall rules and make sure you have allowed traffic on port 5000, also check the pod status and logs to ensure the Flask app is running correctly.
-
-> ⚠️ **CHECKPOINT: Till here you have successfully deployed your Flask app and set up port forwarding to access it externally. Now let's deploy the monitoring components (Prometheus and Grafana) to monitor your application.**
+Create a namespace for monitoring components:
 
 ```bash
-# 2. Deploy Prometheus Config
+kubectl create namespace monitoring
+```
+
+**Why "monitoring"?** The Prometheus and Grafana deployment files have namespace set to monitoring. It needs to match exactly.
+
+Verify namespace creation:
+
+```bash
+kubectl get ns
+```
+
+You should see "monitoring" listed.
+
+**Step 7: Deploy Monitoring Stack (Order Matters!)**
+
+⚠️ **Important:** Deploy Prometheus FIRST because Grafana needs to connect to Prometheus as a data source. If Prometheus isn't deployed and running, Grafana won't be able to connect to it.
+
+Deploy in this order:
+
+```bash
+# 1. Deploy Prometheus Configuration
 kubectl apply -f prometheus/prometheus-configmap.yaml
+# Expected: "configmap/prometheus-config created"
 
-# 3. Deploy Prometheus 
+# 2. Deploy Prometheus Server
 kubectl apply -f prometheus/prometheus-deployment.yaml
+# Expected: "deployment.apps/prometheus created"
 
-# 4. Deploy Grafana
+# 3. Deploy Grafana for Visualization
 kubectl apply -f grafana/grafana-deployment.yaml
+# Expected: "deployment.apps/grafana created"
 ```
 
-**STEP 6: Verify All Pods are Running**
+**Step 8: Verify All Pods are Running**
+
 ```bash
 # Check default namespace (Flask app)
 kubectl get pods
 
 # Check monitoring namespace (Prometheus & Grafana)
 kubectl get pods -n monitoring
-
-# Both should show STATUS: Running
 ```
 
-### 6. Access Your Application & Monitoring
+Both should show STATUS: **Running**
 
-**Open 3 separate terminal windows on the VM and run these port-forward commands:**
+If status shows `ContainerCreating`, wait a moment and check again.
+
+If status shows `Error` or `CrashLoopBackOff`, check pod logs:
+
+```bash
+kubectl logs -n monitoring <pod-name>
+```
+
+---
+
+### 7. Access Your Application via Port Forwarding
+
+Your application is running inside the Kubernetes cluster (which runs inside the VM). To access it externally, we use port forwarding.
+
+> ⚠️ **Checkpoint:** Flask app deployed successfully! Now set up port forwarding to access it externally.
+
+**Important:** Open 3 separate SSH terminal windows on the VM for port forwarding.
 
 **Terminal 1: Flask App (Port 5000)**
+
 ```bash
 kubectl port-forward svc/flask-service 5000:80 --address 0.0.0.0
 ```
-- Access app: `http://<VM-External-IP>:5000`
+
+Expected message: `Forwarding from 0.0.0.0:5000 -> 80`
+
+Access your app: `http://<VM-External-IP>:5000`
+
+**Note:** The `flask-service` name matches your `flask-deployment.yaml` file. If you change it in the deployment file, update it here too.
+
+The `--address 0.0.0.0` flag allows connections from any IP address. Without it, port forwarding only accepts localhost connections.
+
+If you get an error:
+- Check firewall rules allow port 5000
+- Check pod status: `kubectl get pods`
+- Check pod logs: `kubectl logs <flask-app-pod-name>`
 
 **Terminal 2: Prometheus Metrics (Port 9090)**
+
 ```bash
-kubectl port-forward -n monitoring svc/prometheus-service 9090:9090 --address 0.0.0.0
+kubectl port-forward svc/prometheus-service 9090:9090 -n monitoring --address 0.0.0.0
 ```
-- Access: `http://<VM-External-IP>:9090`
-- View targets: `http://<VM-External-IP>:9090/targets`
-- View metrics: `http://<VM-External-IP>:9090/graph`
+
+Expected message: `Forwarding from 0.0.0.0:9090 -> 9090`
+
+Access Prometheus: `http://<VM-External-IP>:9090`
+
+Check if Prometheus is scraping metrics correctly:
+
+```
+http://<VM-External-IP>:9090/targets
+```
+
+You should see 2 targets:
+- **prometheus** → UP (localhost:9090) - Prometheus monitoring itself
+- **flask-app** → UP (<VM-External-IP>:5000) - Prometheus monitoring your Flask app
+
+If both show UP (green), metrics collection is working!
+
+View metrics graph: `http://<VM-External-IP>:9090/graph`
 
 **Terminal 3: Grafana Dashboard (Port 3000)**
+
 ```bash
-kubectl port-forward -n monitoring svc/grafana-service 3000:3000 --address 0.0.0.0
+kubectl port-forward svc/grafana-service 3000:3000 -n monitoring --address 0.0.0.0
 ```
-- Access: `http://<VM-External-IP>:3000`
-- Default login: **admin / admin123**
 
-### 7. Configure Grafana to Show Metrics
+Expected message: `Forwarding from 0.0.0.0:3000 -> 3000`
 
-1. **Login to Grafana** (http://<VM-External-IP>:3000)
-   - Username: `admin`
-   - Password: `admin123`
+Access Grafana: `http://<VM-External-IP>:3000`
 
-2. **Add Prometheus Data Source:**
-   - Go to: Settings (gear icon) → Data Sources
-   - Click: "Add data source"
-   - Choose: **Prometheus**
-   - URL: `http://prometheus-service.monitoring.svc.cluster.local:9090`
-   - Click: "Save & Test"
-   - You should see: ✓ "Datasource is working"
+Default login credentials:
+- **Username:** `admin`
+- **Password:** `admin123` (set in `grafana-deployment.yaml`)
 
-3. **Create Dashboards:**
-   - Go to: Dashboards → New Dashboard
-   - Add panels to visualize:
-     - `flask_request_total` : Total API requests
-     - `flask_request_latency_seconds` : Response times
-     - `chat_response_latency_seconds` : RAG agent response time
-     - `active_sessions` : Active chat sessions
-   - Save your dashboard
+The port number is important - all services use the same external IP, but different ports tell which service you're accessing.
 
-### 8. Troubleshooting Deployment
+**Find Your VM's External IP:**
 
-**If pods are stuck in "Pending":**
+Go to Google Cloud Console → **Compute Engine → VM Instances** and look for your instance. Copy the external IP address (example: `34.42.228.136`).
+
+
+> **now this is how you deploy prometheus and grafana monitoring of your application**
+
+check the namespace for monitoring components
+
+```bash
+kubectl get ns
+```
+
+By default you'll see:
+```
+NAME              STATUS   AGE
+default           Active   20m
+kube-node-lease   Active   20m
+kube-public       Active   20m
+kube-system       Active   20m
+```
+
+The default namespace is where your Flask app runs. The last 3 are Kubernetes system namespaces. We'll create a separate namespace for monitoring to keep things organized.
+
+Create a new namespace for monitoring:
+
+```bash
+kubectl create namespace monitoring
+```
+
+Verify it was created:
+
+```bash
+kubectl get ns
+```
+
+You should see "monitoring" in the list.
+
+important: here order matters, you need to deploy Prometheus first because Grafana needs to connect to Prometheus as a data source, so if Prometheus is not deployed and running, Grafana won't be able to connect to it and you won't be able to visualize the metrics. So always deploy Prometheus first, verify it's running, and then deploy Grafana(the director with file-name must be match with your github repo otherwise break💥).
+
+```bash
+# 1. Deploy Prometheus Config
+kubectl apply -f prometheus/prometheus-configmap.yaml # you see msg like "configmap/prometheus-config created" it means the Prometheus configuration is successfully created in Kubernetes and you can proceed to deploy the Prometheus server which will use this configuration to scrape metrics from your Flask app and itself.
+
+# 2. Deploy Prometheus 
+kubectl apply -f prometheus/prometheus-deployment.yaml # same here, you should see a message like "deployment.apps/prometheus created" it means the Prometheus deployment is successfully created in Kubernetes and you can proceed to deploy Grafana to visualize the metrics collected by Prometheus.
+
+# 3. Deploy Grafana
+kubectl apply -f grafana/grafana-deployment.yaml # you should see a message like "deployment.apps/grafana created" it means the Grafana deployment is successfully created in Kubernetes and you can proceed to verify that all pods (Flask app, Prometheus, Grafana) are running correctly before accessing them.
+```
+
+
+
+---
+
+### 8. Configure Grafana to Show Metrics
+
+**Login to Grafana:**
+
+- Go to: `http://<VM-External-IP>:3000`
+- Username: `admin`
+- Password: `admin123` (set in `grafana-deployment.yaml`)
+
+**Add Prometheus as Data Source:**
+
+1. Search bar (top left) → type "Data Sources"
+2. Click **"Add data source"**
+3. Select **Prometheus**
+4. Configure:
+   - **Name:** "Prometheus" (or any name you prefer)
+   - **URL:** `http://prometheus-service.monitoring.svc.cluster.local:9090`
+   
+   This is the internal URL for Prometheus within the Kubernetes cluster. It should match the service name and namespace in your `prometheus-deployment.yaml` file.
+
+5. Click **"Save & Test"**
+6. You should see: ✓ **"Successfully queried the Prometheus API"** (green) - Grafana is connected!
+
+**Create Dashboards:**
+
+1. Click **Dashboards** (left menu) → **"New Dashboard"**
+2. Click **"Add a new panel"**
+3. In the **Metrics** dropdown, select metrics to visualize:
+   - `flask_request_total` - Total API requests
+   - `flask_request_latency_seconds` - Response times
+   - `chat_response_latency_seconds` - RAG agent response time
+   - `active_sessions` - Active chat sessions
+   - Check `app.py` for more available metrics
+4. Set label filter as `instance` to see metrics per instance (if you have multiple)
+5. Click **"Run queries"** to preview
+6. Click **"Save"** and name your dashboard (e.g., "Flask App Metrics")
+
+**View Metrics in Real-Time:**
+
+Chat with your Flask app to generate traffic and watch the metrics update live on your Grafana dashboard!
+
+Create additional panels by clicking "Add another visualization" and selecting different metrics.
+
+### 9. Troubleshooting Deployment
+
+**Problem: Pods Stuck in "Pending" Status**
+
+Get detailed information about the pod:
 ```bash
 kubectl describe pod <pod-name>
 kubectl describe pod -n monitoring <pod-name>
 ```
 
-**If cannot connect to services:**
+This shows events and conditions preventing the pod from running (usually resource constraints or image pull issues).
+
+**Problem: Cannot Connect to Services**
+
+Check available services:
 ```bash
-# Check service endpoints
 kubectl get svc
 kubectl get svc -n monitoring
+```
 
-# Check pod logs
+Check pod logs for error messages:
+```bash
 kubectl logs <pod-name>
 kubectl logs -n monitoring <pod-name>
 ```
 
-**To restart deployment:**
+**Solution: Restart Deployments**
+
+If a service is not responding, restart it:
 ```bash
 kubectl rollout restart deployment/flask-app
 kubectl rollout restart deployment/prometheus -n monitoring
 kubectl rollout restart deployment/grafana -n monitoring
 ```
 
-**To delete everything and start over:**
+**Nuclear Option: Delete Everything & Start Fresh**
+
+If you need to completely reset:
 ```bash
 kubectl delete -f flask-deployment.yaml
 kubectl delete -f prometheus/
@@ -424,17 +601,59 @@ kubectl delete -f grafana/
 kubectl delete namespace monitoring
 ```
 
-### 9. PROJECT STRUCTURE REFERENCE
+Then redeploy from [Step 2: Deploy Prometheus & Grafana](#deploy-prometheus--grafana).
+
+### 10. Project Structure Reference
+
+Here's the directory organization for this deployment:
 
 ```
 flipkart-shopping-agent/
-├── flask-deployment.yaml     # App Deployment
-├── Dockerfile                # Docker Build
-├── app.py                    # Backend
-├── prometheus/               # Monitoring
-│   ├── prometheus-configmap.yaml
-│   └── prometheus-deployment.yaml
-├── grafana/                  # Visualization
-│   └── grafana-deployment.yaml
+├── flask-deployment.yaml     # Kubernetes Flask App Deployment
+├── Dockerfile                # Docker image build configuration
+├── app.py                    # Flask backend server
+├── prometheus/               # Prometheus monitoring setup
+│   ├── prometheus-configmap.yaml    # Prometheus configuration
+│   └── prometheus-deployment.yaml   # Prometheus deployment
+├── grafana/                  # Grafana visualization setup
+│   └── grafana-deployment.yaml      # Grafana deployment
+├── src/                      # Source code (agent, pipeline, config, utils)
 └── ...
 ```
+
+**Key Files:**
+- **flask-deployment.yaml** - Defines how Flask app runs in Kubernetes (replicas, ports, environment variables)
+- **Dockerfile** - Specifies how to build the Docker image for your Flask app
+- **prometheus-configmap.yaml** - Tells Prometheus which services to monitor and how to scrape metrics
+- **prometheus-deployment.yaml** - Runs Prometheus in Kubernetes
+- **grafana-deployment.yaml** - Runs Grafana for visualization
+
+### 11. Clean Up Resources (Avoid Unnecessary Costs)
+
+After completing development/testing, clean up resources to prevent ongoing charges (~$0.15/hour = $112.84/month).
+
+**Delete the VM Instance:**
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Navigate to **Compute Engine** → **VM Instances**
+3. Find your VM instance (e.g., `flipkart-agent-vm`)
+4. Click **⋮** (three dots) next to the instance → select **Delete**
+5. Confirm deletion (takes 3-4 minutes to complete)
+
+Once deleted, charges for this instance stop immediately.
+
+**Optional: Delete Associated Resources**
+
+If created specifically for this project, also delete:
+
+- **Disks** - Any persistent disks not attached to running instances
+- **Firewall Rules** - Rules you created for ports 5000, 9090, 3000
+  - Go to **VPC Network** → **Firewall Rules**
+  - Find and delete rules created for this project
+- **VPC Networks** - If you created a custom network specifically for this project
+
+**Cost Savings Tip:**
+
+> ⚠️ **Always clean up resources after use.** Even a "stopped" VM instance can incur storage costs. Always **delete** instead of just stopping if you won't use it again.
+
+Always verify deletion is complete before closing the Cloud Console to ensure you won't be charged for forgotten resources.
