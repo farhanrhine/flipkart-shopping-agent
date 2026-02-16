@@ -199,7 +199,7 @@ kubectl apply -f flask-deployment.yaml
 
 For complete cloud deployment instructions on **Google Cloud Platform (GCP)** using **Minikube**, refer to:
 
-👉 [**how-to-deploy.md**](GCP-MINIKUBE-FLASK-DOCKER-PROMETHEUS-GARAFANA-DEPLOYMENT.md)
+👉 [**how-to-deploy**](GCP-MINIKUBE-FLASK-DOCKER-PROMETHEUS-GRAFANA-DEPLOYMENT.mdmd)
 
 ---
 
