@@ -1,3 +1,33 @@
+---
+
+## Technology Stack for This Deployment
+
+This guide deploys your **Flipkart Shopping Agent** using modern DevOps and containerization technologies:
+
+| Technology | Purpose | Why? |
+|-----------|---------|------|
+| **Google Cloud Platform (GCP)** | Cloud hosting | Scalable, reliable cloud infrastructure (~$0.15/hour) |
+| **Ubuntu 24.04 LTS** | Operating System | Server OS with security updates & stability |
+| **Docker** | Containerization | Package app with all dependencies, run anywhere |
+| **Kubernetes (Minikube)** | Container Orchestration | Manage, scale, and monitor containers automatically |
+| **Flask** | Web Framework | Lightweight Python backend for your AI agent |
+| **Prometheus** | Metrics Collection | Monitors app performance, resource usage in real-time |
+| **Grafana** | Data Visualization | Beautiful dashboards showing Prometheus metrics |
+| **Git & GitHub** | Version Control | Track code changes, deploy from repository |
+
+**You'll also use:**
+- **Kubernetes Secrets** - Securely store API keys (AstraDB, Groq, HuggingFace tokens)
+- **kubectl** - Command-line tool to manage Kubernetes
+- **Port Forwarding** - Access services running inside Kubernetes from outside VM
+
+**Why this stack?**
+- **Docker** = Consistent deployment (works on any machine)
+- **Kubernetes** = Professional-grade container management (used by Netflix, Google, Amazon)
+- **Prometheus + Grafana** = Monitor app health and performance like major companies do
+- **Self-hosted** = You own your infrastructure, no vendor lock-in
+
+---
+
 ### 1. Initial Setup
 
 **Prerequisites:**
@@ -497,7 +527,14 @@ kubectl get ns
 
 You should see "monitoring" in the list.
 
-important: here order matters, you need to deploy Prometheus first because Grafana needs to connect to Prometheus as a data source, so if Prometheus is not deployed and running, Grafana won't be able to connect to it and you won't be able to visualize the metrics. So always deploy Prometheus first, verify it's running, and then deploy Grafana(the director with file-name must be match with your github repo otherwise break💥).
+> ⚠️ **CRITICAL: Deployment Order Matters!**
+>
+> Deploy **Prometheus FIRST**, then Grafana. If you deploy them in the wrong order:
+> - Grafana won't be able to connect to Prometheus as a data source
+> - Metrics won't be visualized
+> - Deployment will fail
+>
+> **Also Important:** The directory and file names must match your GitHub repo exactly, otherwise it breaks 💥
 
 ```bash
 # 1. Deploy Prometheus Config
@@ -515,6 +552,22 @@ kubectl apply -f grafana/grafana-deployment.yaml # you should see a message like
 ---
 
 ### 8. Configure Grafana to Show Metrics
+
+> ℹ️ **About Accounts: Self-Hosted vs Cloud Services**
+>
+> **When you DON'T need accounts (like this project):**
+> - Self-hosted Prometheus & Grafana running on your own VM/Kubernetes
+> - You own the infrastructure
+> - Use local default credentials (admin/admin123)
+> - No external sign-ups needed
+>
+> **When you DO need accounts:**
+> - Using **Grafana Cloud** (managed service by Grafana Labs)
+> - Using **Prometheus Cloud** or external monitoring services
+> - Using 3rd-party SaaS platforms
+> - These require email/password signup
+>
+> **This project uses self-hosted approach** → no accounts needed, just use default credentials below.
 
 **Login to Grafana:**
 
